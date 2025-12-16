@@ -171,7 +171,7 @@ func FormatMultiRegionPrices(data *entities.MultiRegionPriceData) string {
 }
 
 // formatPriceText форматирует текст цены в зависимости от скидки и страны
-func formatPriceText(region entities.RegionPrice) string {
+func formatPriceText(region entities.RegionalPriceInfo) string {
 	FinalPrice := fmt.Sprintf("%.2f %s", float64(region.Item.Price.Final)/100, region.Item.Price.Currency)
 	InitialPrice := fmt.Sprintf("%.2f %s", float64(region.Item.Price.Initial)/100, region.Item.Price.Currency)
 
