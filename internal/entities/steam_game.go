@@ -89,14 +89,15 @@ func (s SteamItem) String() string {
 
 // RegionalPriceInfo represents price information for a specific region
 type RegionalPriceInfo struct {
-	CountryCode string
-	CountryFlag string
-	Item        *SteamItem
-	ConvertedRub float64  // Converted price to rubles if available
+	CountryCode  string
+	CountryFlag  string
+	Item         *SteamItem
+	ConvertedRub float64 // Converted price to rubles if available
 }
 
 // MultiRegionPriceData holds pricing information across multiple regions
 type MultiRegionPriceData struct {
+	ID       int
 	GameName string
 	Regions  []*RegionalPriceInfo
 }

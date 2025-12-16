@@ -43,6 +43,7 @@ func (s *MultiRegionPriceService) GetMultiRegionPrices(ctx context.Context, quer
 	}
 
 	data.GameName = game.Name
+	data.ID = game.ID
 
 	// Получаем цены для каждой страны
 	for countryCode, flag := range countries {
