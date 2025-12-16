@@ -35,12 +35,12 @@ func main() {
 		// Локально загружаем .env файл и используем тестовый токен
 		err := godotenv.Load()
 		if err != nil {
-			log.Printf("Не удалось загрузить .env файл: %v", err)
+			log.Printf("Файл .env не найден, используем переменную окружения: %v", err)
 		}
 
 		token = os.Getenv("TELEGRAM_BOT_TOKEN")
 		if token == "" {
-			log.Fatal("Необходимо установить переменную окружения TELEGRAM_BOT_TOKEN в .env файле")
+			log.Fatal("Необходимо установить переменную окружения TELEGRAM_BOT_TOKEN (в .env файле или системной переменной)")
 		}
 	}
 
