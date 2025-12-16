@@ -24,7 +24,7 @@
 
 3. Установите переменные окружения:
    ```bash
-   railway var set TELEGRAM_BOT_TOKEN="ваш_токен_бота_здесь"
+   railway variables set TELEGRAM_BOT_TOKEN="ваш_токен_бота_здесь"
    ```
 
 4. Деплой проекта:
