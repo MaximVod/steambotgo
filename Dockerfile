@@ -3,6 +3,7 @@ FROM golang:1.21-alpine AS builder
 # Установка зависимостей
 RUN apk add --no-cache git
 
+# Установка рабочей директории
 WORKDIR /app
 
 # Копирование go модулей
@@ -10,7 +11,9 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Копирование исходного кода
-COPY . .
+COPY ./cmd ./cmd
+COPY ./internal ./internal
+COPY go.mod go.sum ./
 
 # Сборка приложения
 RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/main.go
