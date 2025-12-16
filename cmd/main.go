@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 
 	"github.com/MaximVod/steambotgo/internal/adapters"
@@ -32,10 +33,25 @@ func main() {
 			log.Fatal("Необходимо установить переменную окружения TELEGRAM_BOT_TOKEN на Railway")
 		}
 	} else {
-		// Локально загружаем .env файл и используем тестовый токен
-		err := godotenv.Load()
+		// Пытаемся загрузить .env файл из директории исполняемого файла
+		exePath, err := os.Executable()
 		if err != nil {
-			log.Printf("Файл .env не найден, используем переменную окружения: %v", err)
+			log.Printf("Не удалось получить путь к исполняемому файлу: %v", err)
+			// Если не получилось, пробуем загрузить .env из текущей директории
+			if err := godotenv.Load(); err != nil {
+				log.Printf("Файл .env не найден в текущей директории: %v", err)
+			}
+		} else {
+			exeDir := filepath.Dir(exePath)
+			envPath := filepath.Join(exeDir, ".env")
+
+			// Пытаемся загрузить .env из директории исполняемого файла
+			if err := godotenv.Load(envPath); err != nil {
+				// Если не получилось, пробуем загрузить .env из текущей директории
+				if err := godotenv.Load(); err != nil {
+					log.Printf("Файл .env не найден в директории приложения или текущей директории: %v", err)
+				}
+			}
 		}
 
 		token = os.Getenv("TELEGRAM_BOT_TOKEN")
@@ -142,19 +158,38 @@ func FormatMultiRegionPrices(data *entities.MultiRegionPriceData) string {
 	// Добавляем информацию о региональных ценах
 	for _, region := range data.Regions {
 		if region.Item.Price != nil {
-			price := fmt.Sprintf("%.2f %s", float64(region.Item.Price.Final)/100, region.Item.Price.Currency)
-			if region.ConvertedRub > 0 && region.CountryCode != "RU" {
-				parts = append(parts, fmt.Sprintf("%s - %s (около %.0f руб)",
-					region.CountryFlag, price, region.ConvertedRub))
-			} else {
-				parts = append(parts, fmt.Sprintf("%s - %s", region.CountryFlag, price))
-			}
+			priceText := formatPriceText(region)
+			parts = append(parts, fmt.Sprintf("%s - %s", region.CountryFlag, priceText))
 		} else {
 			parts = append(parts, fmt.Sprintf("%s - бесплатно", region.CountryFlag))
 		}
 	}
 
+	parts = append(parts, fmt.Sprintf("https://store.steampowered.com/app/%v", data.ID))
+
 	return strings.Join(parts, "\n")
+}
+
+// formatPriceText форматирует текст цены в зависимости от скидки и страны
+func formatPriceText(region entities.RegionPrice) string {
+	FinalPrice := fmt.Sprintf("%.2f %s", float64(region.Item.Price.Final)/100, region.Item.Price.Currency)
+	InitialPrice := fmt.Sprintf("%.2f %s", float64(region.Item.Price.Initial)/100, region.Item.Price.Currency)
+
+	hasDiscount := region.Item.Price.Initial > region.Item.Price.Final
+	hasConversion := region.ConvertedRub > 0 && region.CountryCode != "RU"
+
+	var text string
+	if hasDiscount {
+		text = fmt.Sprintf("Цена со скидкой - %s (вместо - %s)", FinalPrice, InitialPrice)
+	} else {
+		text = FinalPrice
+	}
+
+	if hasConversion {
+		text += fmt.Sprintf(" (около %.0f руб)", region.ConvertedRub)
+	}
+
+	return text
 }
 
 func FormatSteamItems(items []entities.SteamItem) string {
