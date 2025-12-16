@@ -13,6 +13,7 @@ import (
 	"github.com/MaximVod/steambotgo/internal/usecases"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
+	"github.com/joho/godotenv"
 )
 
 // Отправьте любое текстовое сообщение боту после его запуска
@@ -21,13 +22,25 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
+	// Загружаем переменные окружения из файла .env
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Не удалось загрузить .env файл: %v", err)
+	}
+
+	// Получаем токен из переменной окружения
+	token := os.Getenv("TELEGRAM_BOT_TOKEN")
+	if token == "" {
+		log.Fatal("Необходимо установить переменную окружения TELEGRAM_BOT_TOKEN")
+	}
+
 	// Инициализация
 
 	opts := []bot.Option{
 		bot.WithDefaultHandler(handler),
 	}
 
-	b, err := bot.New("7051860362:AAEYdIR0yjI_Q-qeDjtzELvTUga6yCSHMYI", opts...)
+	b, err := bot.New(token, opts...)
 	if err != nil {
 		panic(err)
 	}
