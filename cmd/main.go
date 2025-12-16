@@ -134,7 +134,6 @@ func FormatMultiRegionPrices(data *entities.MultiRegionPriceData) string {
 	for _, region := range data.Regions {
 		if region.Item.Price != nil {
 			price := fmt.Sprintf("%.2f %s", float64(region.Item.Price.Final)/100, region.Item.Price.Currency)
-			print(region.CountryCode)
 			if region.ConvertedRub > 0 && region.CountryCode != "RU" {
 				parts = append(parts, fmt.Sprintf("%s - %s (около %.0f руб)",
 					region.CountryFlag, price, region.ConvertedRub))
