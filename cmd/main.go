@@ -22,20 +22,29 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	// Загружаем переменные окружения из файла .env
-	err := godotenv.Load()
-	if err != nil {
-		log.Printf("Не удалось загрузить .env файл: %v", err)
-	}
+	var token string
 
-	// Получаем токен из переменной окружения
-	token := os.Getenv("TELEGRAM_BOT_TOKEN")
-	if token == "" {
-		log.Fatal("Необходимо установить переменную окружения TELEGRAM_BOT_TOKEN")
+	// Проверяем, запущено ли приложение на Railway
+	if os.Getenv("RAILWAY") != "" {
+		// На Railway используем основной токен
+		token = os.Getenv("TELEGRAM_BOT_TOKEN")
+		if token == "" {
+			log.Fatal("Необходимо установить переменную окружения TELEGRAM_BOT_TOKEN на Railway")
+		}
+	} else {
+		// Локально загружаем .env файл и используем тестовый токен
+		err := godotenv.Load()
+		if err != nil {
+			log.Printf("Не удалось загрузить .env файл: %v", err)
+		}
+
+		token = os.Getenv("TELEGRAM_BOT_TOKEN")
+		if token == "" {
+			log.Fatal("Необходимо установить переменную окружения TELEGRAM_BOT_TOKEN в .env файле")
+		}
 	}
 
 	// Инициализация
-
 	opts := []bot.Option{
 		bot.WithDefaultHandler(handler),
 	}
