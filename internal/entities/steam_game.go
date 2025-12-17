@@ -1,11 +1,59 @@
 package entities
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"strconv"
+)
 
 // SteamResponse — корневой объект ответа.
 // JSON: { "items": [...] }
 type SteamResponse struct {
 	Items []SteamItem `json:"items"`
+}
+
+// Metascore - кастомный тип для обработки metascore, который может быть int или string
+type Metascore string
+
+// UnmarshalJSON обрабатывает metascore, который может быть int (0) или string
+func (m *Metascore) UnmarshalJSON(data []byte) error {
+	// Пробуем распарсить как число
+	var num int
+	if err := json.Unmarshal(data, &num); err == nil {
+		// Если это 0, значит метаскор отсутствует
+		if num == 0 {
+			*m = ""
+			return nil
+		}
+		*m = Metascore(strconv.Itoa(num))
+		return nil
+	}
+
+	// Пробуем распарсить как строку
+	var str string
+	if err := json.Unmarshal(data, &str); err == nil {
+		// Если пустая строка или "0", значит метаскор отсутствует
+		if str == "" || str == "0" {
+			*m = ""
+			return nil
+		}
+		*m = Metascore(str)
+		return nil
+	}
+
+	// Если ничего не подошло, оставляем пустым
+	*m = ""
+	return nil
+}
+
+// String возвращает строковое представление метаскора
+func (m Metascore) String() string {
+	return string(m)
+}
+
+// IsEmpty проверяет, пустой ли метаскор
+func (m Metascore) IsEmpty() bool {
+	return m == "" || m == "0"
 }
 
 // SteamItem — один элемент (игра/дополнение).
@@ -15,7 +63,7 @@ type SteamItem struct {
 	ID                int        `json:"id"`
 	Price             *PriceInfo `json:"price,omitempty"` // может отсутствовать → указатель
 	TinyImage         string     `json:"tiny_image"`
-	Metascore         string     `json:"metascore"` // "" если нет оценки
+	Metascore         Metascore  `json:"metascore"` // может быть int (0) или string
 	Platforms         Platforms  `json:"platforms"`
 	StreamingVideo    bool       `json:"streamingvideo"`
 	ControllerSupport string     `json:"controller_support,omitempty"` // не у всех есть
@@ -61,8 +109,8 @@ func (s SteamItem) String() string {
 
 	// Metascore (если есть)
 	metascore := ""
-	if s.Metascore != "" {
-		metascore = fmt.Sprintf(" ⭐ %s", s.Metascore)
+	if !s.Metascore.IsEmpty() {
+		metascore = fmt.Sprintf(" ⭐ %s", s.Metascore.String())
 	}
 
 	// Controller support (если есть)

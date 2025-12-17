@@ -30,8 +30,7 @@ go.work.sum
 .env.*.local
 
 # Documentation files (internal notes)
-ARCHITECTURE_NOTIFICATIONS.md
-IMPROVEMENTS.md
+docs/
 
 # Build artifacts
 main
