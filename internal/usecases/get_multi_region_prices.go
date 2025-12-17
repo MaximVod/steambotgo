@@ -9,22 +9,21 @@ import (
 )
 
 type MultiRegionPriceService struct {
-	api interfaces.SteamAPI
+	api              interfaces.SteamAPI
+	supportedCountries map[string]string // country code -> flag emoji
+	currencyRates    map[string]float64   // currency code -> rate to RUB
 }
 
-func NewMultiRegionPriceService(api interfaces.SteamAPI) *MultiRegionPriceService {
-	return &MultiRegionPriceService{api: api}
+func NewMultiRegionPriceService(api interfaces.SteamAPI, countries map[string]string, rates map[string]float64) *MultiRegionPriceService {
+	return &MultiRegionPriceService{
+		api:                api,
+		supportedCountries: countries,
+		currencyRates:      rates,
+	}
 }
 
 // GetMultiRegionPrices извлекает цены на игры из нескольких стран
 func (s *MultiRegionPriceService) GetMultiRegionPrices(ctx context.Context, query string) (*entities.MultiRegionPriceData, error) {
-	// Определяем страны, для которых мы хотим получить цены
-	countries := map[string]string{
-		"RU": "🇷🇺", // Россия
-		"KZ": "🇰🇿", // Казахстан
-		"TR": "🇹🇷", // Турция
-		"PL": "🇵🇱", // Польша
-	}
 
 	data := &entities.MultiRegionPriceData{}
 
@@ -46,7 +45,7 @@ func (s *MultiRegionPriceService) GetMultiRegionPrices(ctx context.Context, quer
 	data.ID = game.ID
 
 	// Получаем цены для каждой страны
-	for countryCode, flag := range countries {
+	for countryCode, flag := range s.supportedCountries {
 		item, err := s.api.GetGamePricesByCountryCode(ctx, query, countryCode)
 		if err != nil {
 			// Пропускаем эту страну, если произошла ошибка
@@ -80,37 +79,15 @@ func (s *MultiRegionPriceService) convertPriceToRubles(price float64, currency s
 	// региональные различия, так как ограничены используемым нами конечным пунктом.
 	// Для получения точных региональных цен нам нужно использовать API обзора цен Steam для каждого конкретного ID приложения.
 
-	// цена уже указана в местной валюте указанной страны
-	// currency - это фактический 3-буквенный код валюты, возвращаемый API Steam (например, "RUB", "KZT", "TRY", "PLN", etc.)
-
-	// Примерные курсы обмена для конвертации местных цен в рубли (по состоянию на декабрь 2025)
-	switch currency {
-	case "RUB":
-		// Уже в рублях
-		return price
-	case "USD":
-		// Конвертируем доллары США в рубли (приблизительно)
-		return price * 90 // 1 USD ≈ 90 RUB
-	case "EUR":
-		// Конвертируем евро в рубли (приблизительно)
-		return price * 99 // 1 EUR ≈ 99 RUB
-	case "KZT":
-		// Конвертируем казахстанские тенге в рубли (приблизительно)
-		return price * 0.2 // 1 KZT ≈ 0.2 RUB (приблизительно)
-	case "TRY":
-		// Конвертируем турецкую лиру в рубли (приблизительно)
-		return price * 2.2 // 1 TRY ≈ 2.2 RUB (приблизительно)
-	case "PLN":
-		// Конвертируем польские злотые в рубли (приблизительно)
-		return price * 23 // 1 PLN ≈ 23 RUB (приблизительно)
-	case "GBP":
-		// Конвертируем британские фунты в рубли (приблизительно)
-		return price * 110 // 1 GBP ≈ 110 RUB (приблизительно)
-	case "CNY":
-		// Конвертируем китайский юань в рубли (приблизительно)
-		return price * 13 // 1 CNY ≈ 13 RUB (приблизительно)
-	default:
-		// Для неизвестных валют возвращаем цену как есть, но, вероятно, требуется ручная конвертация
-		return price * 90 // Приблизительная оценка по умолчанию
+	// Используем курсы из конфигурации
+	rate, exists := s.currencyRates[currency]
+	if !exists {
+		// Для неизвестных валют используем курс USD по умолчанию
+		rate = s.currencyRates["USD"]
+		if rate == 0 {
+			rate = 90 // Fallback значение
+		}
 	}
+
+	return price * rate
 }

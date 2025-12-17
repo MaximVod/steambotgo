@@ -18,11 +18,11 @@ type SteamGamesAPI struct {
 	client  *http.Client
 }
 
-func NewSteamGamesAPI() *SteamGamesAPI {
+func NewSteamGamesAPI(baseURL string, timeout time.Duration) *SteamGamesAPI {
 	return &SteamGamesAPI{
-		baseURL: "https://store.steampowered.com",
+		baseURL: baseURL,
 		client: &http.Client{
-			Timeout: 10 * time.Second, // ↓ сократил — Steam отвечает быстро
+			Timeout: timeout,
 		},
 	}
 }
