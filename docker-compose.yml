@@ -17,7 +17,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: always
+
+  bot:
+    build: .
+    container_name: steambotgo-bot
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/steambotgo?sslmode=disable
+      STEAM_BASE_URL: https://store.steampowered.com
+    restart: always
 
 volumes:
   postgres_data:
-
