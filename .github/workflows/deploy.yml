@@ -24,6 +24,7 @@ jobs:
           script: |
             cd /opt/steambotgo
             git pull origin main
-            docker-compose down || true
-            docker-compose up -d --build
+            docker-compose down -v --remove-orphans || true
+            docker system prune -f
+            docker-compose up -d --build --force-recreate
             docker-compose logs --tail=50 bot
