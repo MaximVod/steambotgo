@@ -11,6 +11,7 @@ type Config struct {
 	Telegram TelegramConfig
 	Steam    SteamConfig
 	App      AppConfig
+	Database DatabaseConfig
 }
 
 // TelegramConfig содержит настройки Telegram бота
@@ -27,11 +28,19 @@ type SteamConfig struct {
 
 // AppConfig содержит общие настройки приложения
 type AppConfig struct {
-	MaxSearchResults    int
-	MaxRegionResults    int
-	SupportedCountries  map[string]string // country code -> flag emoji
-	CurrencyRates       map[string]float64 // currency code -> rate to RUB
-	IsRailway           bool
+	MaxSearchResults   int
+	MaxRegionResults   int
+	SupportedCountries map[string]string  // country code -> flag emoji
+	CurrencyRates      map[string]float64 // currency code -> rate to RUB
+	IsRailway          bool
+}
+
+// DatabaseConfig содержит настройки для подключения к базе данных
+type DatabaseConfig struct {
+	// URL - строка подключения к PostgreSQL
+	// Формат: postgres://username:password@host:port/database?sslmode=disable
+	// Пример: postgres://postgres:postgres@localhost:5432/steambotgo?sslmode=disable
+	URL string
 }
 
 // Load загружает конфигурацию из переменных окружения
@@ -66,6 +75,14 @@ func Load() (*Config, error) {
 			},
 			IsRailway: os.Getenv("RAILWAY") != "",
 		},
+		Database: DatabaseConfig{
+			// Загружаем connection string из переменной окружения
+			// Если не указана, используем значение по умолчанию для локальной разработки
+			URL: getEnvOrDefault(
+				"DATABASE_URL",
+				"postgres://postgres:postgres@localhost:5432/steambotgo?sslmode=disable",
+			),
+		},
 	}
 
 	if cfg.Telegram.BotToken == "" {
@@ -81,4 +98,3 @@ func getEnvOrDefault(key, defaultValue string) string {
 	}
 	return defaultValue
 }
-

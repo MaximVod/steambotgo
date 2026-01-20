@@ -36,7 +36,7 @@ func (f *MessageFormatter) FormatMultiRegionPrices(data *entities.MultiRegionPri
 			priceText := f.formatPriceText(region)
 			parts = append(parts, fmt.Sprintf("%s - %s", region.CountryFlag, priceText))
 		} else {
-			parts = append(parts, fmt.Sprintf("%s - бесплатно", region.CountryFlag))
+			parts = append(parts, fmt.Sprintf("%s - Недоступно", region.CountryFlag))
 		}
 	}
 
@@ -84,4 +84,3 @@ func (f *MessageFormatter) formatPriceText(region *entities.RegionalPriceInfo) s
 
 	return text
 }
-
