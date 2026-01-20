@@ -32,7 +32,6 @@ type AppConfig struct {
 	MaxRegionResults   int
 	SupportedCountries map[string]string  // country code -> flag emoji
 	CurrencyRates      map[string]float64 // currency code -> rate to RUB
-	IsRailway          bool
 }
 
 // DatabaseConfig содержит настройки для подключения к базе данных
@@ -73,7 +72,6 @@ func Load() (*Config, error) {
 				"GBP": 110.0, // 1 GBP ≈ 110 RUB
 				"CNY": 13.0,  // 1 CNY ≈ 13 RUB
 			},
-			IsRailway: os.Getenv("RAILWAY") != "",
 		},
 		Database: DatabaseConfig{
 			// Загружаем connection string из переменной окружения

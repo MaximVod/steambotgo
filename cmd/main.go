@@ -21,7 +21,6 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	// Загружаем .env файл если не на Railway
 	cfg, err := loadConfig()
 	if err != nil {
 		log.Fatalf("Ошибка загрузки конфигурации: %v", err)
@@ -77,12 +76,10 @@ func main() {
 
 // loadConfig загружает конфигурацию с учетом окружения
 func loadConfig() (*config.Config, error) {
-	// Если не на Railway, пытаемся загрузить .env файл
-	if os.Getenv("RAILWAY") == "" {
-		if err := loadEnvFile(); err != nil {
-			// Не критично, если .env не найден
-			log.Printf("Предупреждение: не удалось загрузить .env файл: %v", err)
-		}
+	// Пытаемся загрузить .env файл
+	if err := loadEnvFile(); err != nil {
+		// Не критично, если .env не найден
+		log.Printf("Предупреждение: не удалось загрузить .env файл: %v", err)
 	}
 
 	return config.Load()
