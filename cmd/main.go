@@ -9,7 +9,7 @@ import (
 
 	"github.com/MaximVod/steambotgo/internal/adapters"
 	"github.com/MaximVod/steambotgo/internal/config"
-	"github.com/MaximVod/steambotgo/internal/database"
+	// "github.com/MaximVod/steambotgo/internal/database" // Временно отключено
 	"github.com/MaximVod/steambotgo/internal/handlers"
 	"github.com/MaximVod/steambotgo/internal/logger"
 	"github.com/MaximVod/steambotgo/internal/presenters"
@@ -30,23 +30,23 @@ func main() {
 	appLogger := logger.New()
 	appLogger.Info("Запуск приложения")
 
-	// Инициализируем подключение к базе данных
-	appLogger.Info("Подключение к базе данных", "url", cfg.Database.URL)
-	dbPool, err := database.InitDB(ctx, cfg.Database.URL)
-	if err != nil {
-		appLogger.Error("Ошибка подключения к БД", err)
-		log.Fatalf("Не удалось подключиться к базе данных: %v", err)
-	}
-	defer database.Close(dbPool) // Закрываем соединение при завершении приложения
-	appLogger.Info("Успешно подключено к базе данных")
+	// Временно отключено подключение к базе данных
+	// appLogger.Info("Подключение к базе данных", "url", cfg.Database.URL)
+	// dbPool, err := database.InitDB(ctx, cfg.Database.URL)
+	// if err != nil {
+	// 	appLogger.Error("Ошибка подключения к БД", err)
+	// 	log.Fatalf("Не удалось подключиться к базе данных: %v", err)
+	// }
+	// defer database.Close(dbPool) // Закрываем соединение при завершении приложения
+	// appLogger.Info("Успешно подключено к базе данных")
 
-	// Применяем миграции (создаем таблицы, если их еще нет)
-	appLogger.Info("Применение миграций")
-	if err := database.RunMigrations(ctx, dbPool); err != nil {
-		appLogger.Error("Ошибка применения миграций", err)
-		log.Fatalf("Не удалось применить миграции: %v", err)
-	}
-	appLogger.Info("Миграции применены успешно")
+	// Временно отключено применение миграций
+	// appLogger.Info("Применение миграций")
+	// if err := database.RunMigrations(ctx, dbPool); err != nil {
+	// 	appLogger.Error("Ошибка применения миграций", err)
+	// 	log.Fatalf("Не удалось применить миграции: %v", err)
+	// }
+	// appLogger.Info("Миграции применены успешно")
 
 	// Инициализируем компоненты
 	steamAPI := adapters.NewSteamGamesAPI(cfg.Steam.BaseURL, cfg.Steam.Timeout)
