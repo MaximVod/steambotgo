@@ -27,14 +27,15 @@ type TelegramHandler struct {
 // NewTelegramHandler создает новый обработчик Telegram сообщений
 func NewTelegramHandler(
 	steamAPI interfaces.SteamAPI,
+	aiApi interfaces.AiAPI,
 	formatter *presenters.MessageFormatter,
 	logger logger.Logger,
 	countries map[string]string,
 	currencyRates map[string]float64,
 ) *TelegramHandler {
 	return &TelegramHandler{
-		multiRegionService: usecases.NewMultiRegionPriceService(steamAPI, countries, currencyRates),
-		searchService:      usecases.NewSearchGamesService(steamAPI),
+		multiRegionService: usecases.NewMultiRegionPriceService(steamAPI, aiApi, countries, currencyRates),
+		searchService:      usecases.NewSearchGamesService(steamAPI, aiApi),
 		formatter:          formatter,
 		logger:             logger,
 	}
@@ -72,7 +73,6 @@ func (h *TelegramHandler) Handle(ctx context.Context, b *bot.Bot, update *models
 	prices, err := h.multiRegionService.GetMultiRegionPrices(ctx, query)
 	if err != nil {
 		h.logger.Error("Ошибка получения многонациональных цен", err, "query", query)
-		
 		// Fallback: возвращаемся к обычному поиску
 		items, err := h.searchService.FetchGames(ctx, query)
 		if err != nil {
@@ -122,4 +122,3 @@ type ValidationError struct {
 func (e *ValidationError) Error() string {
 	return e.Message
 }
-

@@ -81,7 +81,7 @@ func (f *SteamGamesAPI) SearchGameByQuery(ctx context.Context, query string) (*e
 }
 
 // GetGamePricesByCountryCode реализует interfaces.SteamAPI.
-func (f *SteamGamesAPI) GetGamePricesByCountryCode(ctx context.Context, query string, countryCode string) (*entities.SteamItem, error) {
+func (f *SteamGamesAPI) GetGamePricesByCountryCode(ctx context.Context, query string, countryCode string, gameID int) (*entities.SteamItem, error) {
 	// Формируем URL с экранированием query и указанием страны
 	endpoint := fmt.Sprintf(
 		"%s/api/storesearch/?term=%s&l=english&cc=%s",
@@ -121,6 +121,18 @@ func (f *SteamGamesAPI) GetGamePricesByCountryCode(ctx context.Context, query st
 		return nil, nil
 	}
 
+	// Если указан gameID, ищем игру с этим ID в результатах
+	if gameID != 0 {
+		for i := range result.Items {
+			if result.Items[i].ID == gameID {
+				return &result.Items[i], nil
+			}
+		}
+		// Если не нашли игру с нужным ID, возвращаем nil
+		return nil, nil
+	}
+
+	// Если gameID не указан, возвращаем первую игру
 	return &result.Items[0], nil
 }
 

@@ -28,9 +28,14 @@ go.work.sum
 .env
 .env.local
 .env.*.local
+.env.test
 
 # Documentation files (internal notes)
 docs/
 
 # Build artifacts
 main
+
+# Local development files
+Makefile
+docker-compose.test.yml

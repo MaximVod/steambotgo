@@ -18,5 +18,6 @@ type SteamAPI interface {
 
 	// GetGamePricesByCountryCode ищет цены на игру в разных странах.
 	// Возвращает информацию об игре с ценами в указанной стране.
-	GetGamePricesByCountryCode(ctx context.Context, query string, countryCode string) (*entities.SteamItem, error)
+	// Если gameID указан (не 0), ищет игру с этим ID в результатах поиска.
+	GetGamePricesByCountryCode(ctx context.Context, query string, countryCode string, gameID int) (*entities.SteamItem, error)
 }

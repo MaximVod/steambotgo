@@ -44,9 +44,15 @@ type DatabaseConfig struct {
 
 // Load загружает конфигурацию из переменных окружения
 func Load() (*Config, error) {
+	// Поддержка тестового бота: если установлен TELEGRAM_BOT_TOKEN_TEST, используем его
+	botToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+	if testToken := os.Getenv("TELEGRAM_BOT_TOKEN_TEST"); testToken != "" {
+		botToken = testToken
+	}
+
 	cfg := &Config{
 		Telegram: TelegramConfig{
-			BotToken: os.Getenv("TELEGRAM_BOT_TOKEN"),
+			BotToken: botToken,
 		},
 		Steam: SteamConfig{
 			BaseURL:    getEnvOrDefault("STEAM_BASE_URL", "https://store.steampowered.com"),

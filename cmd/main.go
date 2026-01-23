@@ -50,9 +50,11 @@ func main() {
 
 	// Инициализируем компоненты
 	steamAPI := adapters.NewSteamGamesAPI(cfg.Steam.BaseURL, cfg.Steam.Timeout)
+	aiAPI := adapters.AiQueriesAPI{}
 	formatter := presenters.NewMessageFormatter()
 	telegramHandler := handlers.NewTelegramHandler(
 		steamAPI,
+		aiAPI,
 		formatter,
 		appLogger,
 		cfg.App.SupportedCountries,
@@ -87,6 +89,15 @@ func loadConfig() (*config.Config, error) {
 
 // loadEnvFile пытается загрузить .env файл из разных мест
 func loadEnvFile() error {
+	// Загружаем .env.test только если явно указано через USE_TEST_BOT=true
+	// или если файл .env.test существует локально (для локальной разработки)
+	// Это предотвращает случайную загрузку тестового конфига на продакшене
+	if os.Getenv("USE_TEST_BOT") == "true" || fileExists(".env.test") {
+		if err := godotenv.Load(".env.test"); err == nil {
+			return nil
+		}
+	}
+
 	// Пытаемся загрузить из директории исполняемого файла
 	exePath, err := os.Executable()
 	if err == nil {
@@ -99,4 +110,13 @@ func loadEnvFile() error {
 
 	// Пытаемся загрузить из текущей директории
 	return godotenv.Load()
+}
+
+// fileExists проверяет существование файла
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
