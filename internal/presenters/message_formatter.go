@@ -30,13 +30,28 @@ func (f *MessageFormatter) FormatMultiRegionPrices(data *entities.MultiRegionPri
 	// Добавляем название игры как заголовок
 	parts = append(parts, fmt.Sprintf("*%s*", data.GameName))
 
+	isAllPricesNotAvailable := false
+
+	gamePriceStatus := "Недоступно"
+
+	// Проверяем на наличие того, есть ли хоть по одному из регионов цена
+	for _, region := range data.Regions {
+		if region.Item.Price != nil {
+			isAllPricesNotAvailable = true
+		}
+	}
+
+	if !isAllPricesNotAvailable {
+		gamePriceStatus = "Бесплатно"
+	}
+
 	// Добавляем информацию о региональных ценах
 	for _, region := range data.Regions {
 		if region.Item.Price != nil {
 			priceText := f.formatPriceText(region)
 			parts = append(parts, fmt.Sprintf("%s - %s", region.CountryFlag, priceText))
 		} else {
-			parts = append(parts, fmt.Sprintf("%s - Недоступно", region.CountryFlag))
+			parts = append(parts, fmt.Sprintf("%s - "+gamePriceStatus, region.CountryFlag))
 		}
 	}
 
